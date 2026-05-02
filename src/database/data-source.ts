@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 import { join } from 'path';
 import { SnakeNamingStrategy } from './snake-naming.strategy';
 
-dotenv.config({ path: join(__dirname, '../../../../.env') });
+dotenv.config({ path: join(__dirname, '../../.env') });
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
