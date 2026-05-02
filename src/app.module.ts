@@ -17,6 +17,8 @@ import { SellHistoriesModule } from './sell-histories/sell-histories.module';
 import { WatchlistsModule } from './watchlists/watchlists.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { ErrorLogsModule } from './error-logs/error-logs.module';
+import { AdminModule } from './admin/admin.module';
+import { NoticesModule } from './notices/notices.module';
 import configuration from './config/configuration';
 import { validationSchema } from './config/validation.schema';
 
@@ -46,6 +48,8 @@ import { validationSchema } from './config/validation.schema';
     WatchlistsModule,
     DashboardModule,
     ErrorLogsModule,
+    AdminModule,
+    NoticesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
