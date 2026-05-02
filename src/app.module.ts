@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { join } from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -15,11 +16,13 @@ import { PositionRulesModule } from './position-rules/position-rules.module';
 import { SellHistoriesModule } from './sell-histories/sell-histories.module';
 import { WatchlistsModule } from './watchlists/watchlists.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { ErrorLogsModule } from './error-logs/error-logs.module';
 import configuration from './config/configuration';
 import { validationSchema } from './config/validation.schema';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: join(__dirname, '../../.env'),
@@ -42,6 +45,7 @@ import { validationSchema } from './config/validation.schema';
     SellHistoriesModule,
     WatchlistsModule,
     DashboardModule,
+    ErrorLogsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

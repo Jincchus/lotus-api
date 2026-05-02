@@ -25,7 +25,10 @@ export class UsersService {
     return this.usersRepo.findOneBy({ googleId });
   }
 
+  private static readonly ADMIN_EMAILS = ['chopoo2001@gmail.com'];
+
   async findOrCreate(profile: GoogleProfile): Promise<User> {
+    const isAdmin = UsersService.ADMIN_EMAILS.includes(profile.email);
     let user = await this.findByGoogleId(profile.googleId);
     if (!user) {
       user = this.usersRepo.create({
@@ -33,7 +36,11 @@ export class UsersService {
         email: profile.email,
         name: profile.name,
         profileImage: profile.profileImage ?? null,
+        role: isAdmin ? 'admin' : 'user',
       });
+      user = await this.usersRepo.save(user);
+    } else if (isAdmin && user.role !== 'admin') {
+      user.role = 'admin';
       user = await this.usersRepo.save(user);
     }
     return user;

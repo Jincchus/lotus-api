@@ -13,7 +13,7 @@ export class AuthService {
   ) {}
 
   login(user: User, res: Response): void {
-    const payload: JwtPayload = { sub: user.id, email: user.email };
+    const payload: JwtPayload = { sub: user.id, email: user.email, role: user.role };
     const token = this.jwtService.sign(payload);
 
     const isProd = this.config.get<string>('app.env') === 'production';
@@ -35,6 +35,7 @@ export class AuthService {
       email: user.email,
       name: user.name,
       profileImage: user.profileImage,
+      role: user.role,
     };
   }
 }

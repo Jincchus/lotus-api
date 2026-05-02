@@ -27,6 +27,9 @@ export class User {
   @Column({ name: 'profile_image', type: 'varchar', nullable: true })
   profileImage: string | null;
 
+  @Column({ type: 'varchar', default: 'user' })
+  role: 'user' | 'admin';
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

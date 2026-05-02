@@ -8,6 +8,7 @@ import { UsersService } from '../../users/users.service';
 export interface JwtPayload {
   sub: string;
   email: string;
+  role: 'user' | 'admin';
 }
 
 const cookieExtractor = (req: Request): string | null => {

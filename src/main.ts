@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv';
 import { join } from 'path';
-dotenv.config({ path: join(__dirname, '../../../.env') });
+dotenv.config({ path: join(__dirname, '../../.env') });
 
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
