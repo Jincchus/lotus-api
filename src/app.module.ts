@@ -22,7 +22,7 @@ import { validationSchema } from './config/validation.schema';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: join(__dirname, '../../../.env'),
+      envFilePath: join(__dirname, '../../.env'),
       load: [configuration],
       validationSchema,
       validationOptions: {
