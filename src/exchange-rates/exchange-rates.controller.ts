@@ -1,5 +1,6 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AdminGuard } from '../common/guards/admin.guard';
 import { ExchangeRatesService } from './exchange-rates.service';
 
 @Controller('exchange-rates')
@@ -17,5 +18,15 @@ export class ExchangeRatesController {
   async getByDate(@Query('date') date: string) {
     const { rate, source } = await this.exchangeRatesService.getRateByDate(date);
     return { usdToKrw: rate, source };
+  }
+
+  /** 관리자: 특정 날짜 환율 수동 저장/수정 */
+  @Put(':date')
+  @UseGuards(AdminGuard)
+  async upsertByDate(
+    @Param('date') date: string,
+    @Body('usdToKrw') usdToKrw: number,
+  ) {
+    return this.exchangeRatesService.upsertByDate(date, usdToKrw);
   }
 }
