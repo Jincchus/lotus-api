@@ -2,12 +2,13 @@ import {
   Controller,
   Get,
   Post,
+  Req,
   Res,
   UseGuards,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -24,14 +25,12 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(GoogleAuthGuard)
-  googleLogin() {
-    // Passport가 Google 로그인 페이지로 리다이렉트 처리
-  }
+  googleLogin() {}
 
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
-  googleCallback(@CurrentUser() user: User, @Res() res: Response) {
-    this.authService.login(user, res);
+  async googleCallback(@CurrentUser() user: User, @Res() res: Response) {
+    await this.authService.login(user, res);
     const frontendUrl = this.config.get<string>('app.frontendUrl')!;
     res.redirect(`${frontendUrl}/dashboard`);
   }
@@ -42,11 +41,19 @@ export class AuthController {
     return this.authService.getProfile(user);
   }
 
+  /** Access token 만료 시 refresh token으로 재발급 (인증 불필요) */
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    await this.authService.refresh(req.cookies?.refresh_token, res);
+    return { success: true };
+  }
+
   @Post('logout')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  logout(@Res({ passthrough: true }) res: Response) {
-    this.authService.logout(res);
+  async logout(@CurrentUser() user: User, @Res({ passthrough: true }) res: Response) {
+    await this.authService.logout(user.id, res);
     return { message: 'Logged out' };
   }
 }
