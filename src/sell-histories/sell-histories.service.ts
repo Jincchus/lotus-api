@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { SellHistory, SellType } from './sell-history.entity';
 import { Lot } from '../lots/lot.entity';
+import { PositionRule } from '../position-rules/position-rule.entity';
 import { ExchangeRatesService } from '../exchange-rates/exchange-rates.service';
 import { ExecuteSellDto } from './dto/execute-sell.dto';
 import { Currency } from '../stocks/stock.entity';
@@ -92,12 +93,28 @@ export class SellHistoriesService {
       const exchangeRateAtSell =
         lot.stock.currency === Currency.USD ? exchangeRate : null;
 
+      // PositionRule 처리 (트랜잭션 내부 — 중복 실행 방지 + is_executed 업데이트)
+      if (dto.positionRuleId) {
+        const rule = await manager.findOne(PositionRule, {
+          where: { id: dto.positionRuleId, lot: { id: lotId } },
+        });
+        if (!rule) throw new NotFoundException('PositionRule을 찾을 수 없습니다.');
+        if (rule.isExecuted) {
+          throw new BadRequestException('이미 실행된 PositionRule입니다.');
+        }
+        await manager.update(PositionRule, dto.positionRuleId, {
+          isExecuted: true,
+          executedAt: new Date(),
+        });
+      }
+
       await manager.update(Lot, lotId, {
         remainingQuantity: remaining - dto.sellQuantity,
       });
 
       const history = manager.create(SellHistory, {
         lot: { id: lotId },
+        positionRule: dto.positionRuleId ? { id: dto.positionRuleId } : null,
         sellPrice: dto.sellPrice,
         sellQuantity: dto.sellQuantity,
         sellDate: dto.sellDate,

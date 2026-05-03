@@ -6,11 +6,11 @@ import {
   IsPositive,
   IsString,
   IsUUID,
-  Min,
   MinLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Market } from '../../stocks/stock.entity';
+import { IsNotFutureDate } from '../../common/validators/is-not-future-date.validator';
 
 export class CreateLotDto {
   @IsString()
@@ -28,6 +28,7 @@ export class CreateLotDto {
   purchasePrice: number;
 
   @IsDateString()
+  @IsNotFutureDate()
   purchaseDate: string;
 
   @IsNumber()
@@ -36,7 +37,7 @@ export class CreateLotDto {
 
   @IsOptional()
   @IsNumber()
-  @Min(0)
+  @IsPositive()
   @Type(() => Number)
   exchangeRateAtPurchase?: number;
 

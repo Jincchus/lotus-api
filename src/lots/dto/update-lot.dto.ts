@@ -1,20 +1,22 @@
-import { IsDateString, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator';
+import { IsDateString, IsNumber, IsOptional, IsPositive, IsString, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsNotFutureDate } from '../../common/validators/is-not-future-date.validator';
 
 export class UpdateLotDto {
   @IsOptional()
   @IsNumber()
-  @Min(0)
+  @IsPositive()
   @Type(() => Number)
   purchasePrice?: number;
 
   @IsOptional()
   @IsDateString()
+  @IsNotFutureDate()
   purchaseDate?: string;
 
   @IsOptional()
   @IsNumber()
-  @Min(0)
+  @IsPositive()
   @Type(() => Number)
   initialQuantity?: number;
 

@@ -64,8 +64,10 @@ export class AuthService {
 
   async logout(userId: string, res: Response): Promise<void> {
     await this.refreshTokenRepo.delete({ userId });
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token');
+    const isProd = this.config.get<string>('app.env') === 'production';
+    const cookieBase = { httpOnly: true, secure: isProd, sameSite: 'lax' as const };
+    res.clearCookie('access_token',  cookieBase);
+    res.clearCookie('refresh_token', cookieBase);
   }
 
   getProfile(user: User) {

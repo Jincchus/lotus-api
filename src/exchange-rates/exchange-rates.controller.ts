@@ -20,6 +20,13 @@ export class ExchangeRatesController {
     return { usdToKrw: rate, source };
   }
 
+  /** 관리자: DB 저장 환율 목록 */
+  @Get()
+  @UseGuards(AdminGuard)
+  async findAll(@Query('limit') limit?: string) {
+    return this.exchangeRatesService.findAll(limit ? parseInt(limit) : 60);
+  }
+
   /** 관리자: 특정 날짜 환율 수동 저장/수정 */
   @Put(':date')
   @UseGuards(AdminGuard)

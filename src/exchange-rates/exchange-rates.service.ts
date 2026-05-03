@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
@@ -57,7 +57,17 @@ export class ExchangeRatesService {
 
   /** 관리자: 날짜별 환율 수동 저장 (덮어쓰기 허용) */
   async upsertByDate(date: string, usdToKrw: number): Promise<ExchangeRate> {
+    if (!usdToKrw || usdToKrw <= 0) throw new BadRequestException('환율은 0보다 커야 합니다.');
+    if (date > this.today()) throw new BadRequestException('날짜는 오늘 이전이어야 합니다.');
     return this.upsert(date, usdToKrw);
+  }
+
+  /** 관리자: DB 저장 환율 목록 (최신순) */
+  async findAll(limit = 60): Promise<ExchangeRate[]> {
+    return this.rateRepo.find({
+      order: { date: 'DESC' },
+      take: limit,
+    });
   }
 
   // ── Cron ────────────────────────────────────────────────
