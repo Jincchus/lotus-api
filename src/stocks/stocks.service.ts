@@ -123,6 +123,37 @@ export class StocksService {
     }
   }
 
+  async getPriceAtDate(
+    symbol: string,
+    market: Market,
+    date: string,
+  ): Promise<{ price: number; date: string } | null> {
+    try {
+      const period2 = new Date(new Date(date + 'T00:00:00Z').getTime() + 7 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 10);
+
+      const history = await (yahooFinance as any).historical(
+        symbol,
+        { period1: date, period2, interval: '1d' },
+        { validateResult: false },
+      ) as any[];
+
+      if (!history || history.length === 0) return null;
+
+      const entry = history[0];
+      const actualDate =
+        entry.date instanceof Date
+          ? entry.date.toISOString().slice(0, 10)
+          : String(entry.date).slice(0, 10);
+
+      return { price: entry.close as number, date: actualDate };
+    } catch (err) {
+      this.logger.error(`Historical price failed for ${symbol} on ${date}`, err);
+      return null;
+    }
+  }
+
   private async getValidPriceCache(
     symbol: string,
     market: Market,

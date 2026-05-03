@@ -1,12 +1,14 @@
 import {
+  Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
+  Patch,
   Post,
   Req,
   Res,
   UseGuards,
-  HttpCode,
-  HttpStatus,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
@@ -39,6 +41,15 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   getMe(@CurrentUser() user: User) {
     return this.authService.getProfile(user);
+  }
+
+  @Patch('me')
+  @UseGuards(JwtAuthGuard)
+  updateMe(
+    @CurrentUser() user: User,
+    @Body() body: { defaultStrategyId: string | null },
+  ) {
+    return this.authService.updateMe(user.id, body);
   }
 
   /** Access token 만료 시 refresh token으로 재발급 (인증 불필요) */

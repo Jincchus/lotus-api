@@ -30,6 +30,9 @@ export class User {
   @Column({ type: 'varchar', default: 'user' })
   role: 'user' | 'admin';
 
+  @Column({ name: 'default_strategy_id', type: 'uuid', nullable: true })
+  defaultStrategyId: string | null;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

@@ -21,4 +21,13 @@ export class StocksController {
   ) {
     return this.stocksService.getPrice(symbol, market);
   }
+
+  @Get('price-at-date')
+  getPriceAtDate(
+    @Query('symbol') symbol: string,
+    @Query('market') market: Market,
+    @Query('date') date: string,
+  ) {
+    return this.stocksService.getPriceAtDate(symbol, market, date);
+  }
 }

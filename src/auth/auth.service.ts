@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -9,6 +9,7 @@ import { User } from '../users/user.entity';
 import { RefreshToken } from './refresh-token.entity';
 import { UsersService } from '../users/users.service';
 import { JwtPayload } from './strategies/jwt.strategy';
+import { Strategy } from '../strategies/strategy.entity';
 
 const ACCESS_TOKEN_TTL  = 60 * 60 * 1000;          // 1시간
 const REFRESH_TOKEN_TTL = 30 * 24 * 60 * 60 * 1000; // 30일
@@ -21,6 +22,8 @@ export class AuthService {
     private readonly usersService: UsersService,
     @InjectRepository(RefreshToken)
     private readonly refreshTokenRepo: Repository<RefreshToken>,
+    @InjectRepository(Strategy)
+    private readonly strategyRepo: Repository<Strategy>,
   ) {}
 
   async login(user: User, res: Response): Promise<void> {
@@ -77,7 +80,21 @@ export class AuthService {
       name: user.name,
       profileImage: user.profileImage,
       role: user.role,
+      defaultStrategyId: user.defaultStrategyId ?? null,
     };
+  }
+
+  async updateMe(userId: string, dto: { defaultStrategyId: string | null }) {
+    const { defaultStrategyId } = dto;
+    if (defaultStrategyId !== null) {
+      const strategy = await this.strategyRepo.findOne({
+        where: { id: defaultStrategyId, user: { id: userId } },
+      });
+      if (!strategy) throw new BadRequestException('전략을 찾을 수 없습니다.');
+    }
+    await this.usersService.updateDefaultStrategy(userId, defaultStrategyId);
+    const updated = await this.usersService.findById(userId);
+    return this.getProfile(updated!);
   }
 
   private hash(token: string): string {

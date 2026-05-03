@@ -10,11 +10,12 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RefreshToken } from './refresh-token.entity';
 import { UsersModule } from '../users/users.module';
+import { Strategy } from '../strategies/strategy.entity';
 
 @Module({
   imports: [
     PassportModule,
-    TypeOrmModule.forFeature([RefreshToken]),
+    TypeOrmModule.forFeature([RefreshToken, Strategy]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

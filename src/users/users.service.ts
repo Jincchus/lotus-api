@@ -27,6 +27,10 @@ export class UsersService {
 
   private static readonly ADMIN_EMAILS = ['chopoo2001@gmail.com'];
 
+  async updateDefaultStrategy(userId: string, strategyId: string | null): Promise<void> {
+    await this.usersRepo.update(userId, { defaultStrategyId: strategyId });
+  }
+
   async findOrCreate(profile: GoogleProfile): Promise<User> {
     const isAdmin = UsersService.ADMIN_EMAILS.includes(profile.email);
     let user = await this.findByGoogleId(profile.googleId);
