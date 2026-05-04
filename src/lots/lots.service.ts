@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Lot } from './lot.entity';
 import { Broker } from '../brokers/broker.entity';
+import { Theme } from '../themes/theme.entity';
 import { StocksService } from '../stocks/stocks.service';
 import { ExchangeRatesService } from '../exchange-rates/exchange-rates.service';
 import { CreateLotDto } from './dto/create-lot.dto';
@@ -26,6 +27,9 @@ export interface LotDto {
   remainingQuantity: number;
   memo: string | null;
   broker: { id: string; name: string };
+  themeId: string | null;
+  themeName: string | null;
+  appliedStrategyName: string | null;
   currentPrice: number | null;
   returnRate: number | null;
   evaluationAmount: number | null;
@@ -41,6 +45,8 @@ export class LotsService {
     private readonly lotRepo: Repository<Lot>,
     @InjectRepository(Broker)
     private readonly brokerRepo: Repository<Broker>,
+    @InjectRepository(Theme)
+    private readonly themeRepo: Repository<Theme>,
     private readonly stocksService: StocksService,
     private readonly exchangeRatesService: ExchangeRatesService,
   ) {}
@@ -64,10 +70,17 @@ export class LotsService {
       }
     }
 
+    let theme: Theme | null = null;
+    if (dto.themeId) {
+      theme = await this.themeRepo.findOneBy({ id: dto.themeId, user: { id: userId } });
+      if (!theme) throw new NotFoundException('테마를 찾을 수 없습니다.');
+    }
+
     const lot = this.lotRepo.create({
       user: { id: userId },
       stock,
       broker,
+      theme,
       purchasePrice: dto.purchasePrice,
       purchaseDate: dto.purchaseDate,
       initialQuantity: dto.quantity,
@@ -93,7 +106,7 @@ export class LotsService {
 
     const lots = await this.lotRepo.find({
       where,
-      relations: ['stock', 'broker'],
+      relations: ['stock', 'broker', 'theme', 'positionRules', 'positionRules.sourceStrategy'],
       order: { createdAt: 'DESC' },
     });
 
@@ -103,7 +116,7 @@ export class LotsService {
   async findOne(id: string, userId: string): Promise<LotDto> {
     const lot = await this.lotRepo.findOne({
       where: { id, user: { id: userId } },
-      relations: ['stock', 'broker', 'positionRules', 'sellHistories'],
+      relations: ['stock', 'broker', 'theme', 'positionRules', 'positionRules.sourceStrategy', 'sellHistories'],
     });
     if (!lot) throw new NotFoundException('Lot을 찾을 수 없습니다.');
 
@@ -116,7 +129,7 @@ export class LotsService {
   async update(id: string, userId: string, dto: UpdateLotDto): Promise<Lot> {
     const lot = await this.lotRepo.findOne({
       where: { id, user: { id: userId } },
-      relations: ['broker'],
+      relations: ['broker', 'theme'],
     });
     if (!lot) throw new NotFoundException('Lot을 찾을 수 없습니다.');
 
@@ -139,6 +152,16 @@ export class LotsService {
       const broker = await this.brokerRepo.findOneBy({ id: dto.brokerId });
       if (!broker) throw new NotFoundException('증권사를 찾을 수 없습니다.');
       lot.broker = broker;
+    }
+
+    if (dto.themeId !== undefined) {
+      if (dto.themeId === null) {
+        lot.theme = null;
+      } else {
+        const theme = await this.themeRepo.findOneBy({ id: dto.themeId, user: { id: userId } });
+        if (!theme) throw new NotFoundException('테마를 찾을 수 없습니다.');
+        lot.theme = theme;
+      }
     }
 
     return this.lotRepo.save(lot);
@@ -202,6 +225,13 @@ export class LotsService {
       const evaluationAmount =
         currentPrice != null ? currentPrice * remaining : null;
 
+      const activeRules = (lot.positionRules ?? []).filter(
+        (r) => !r.isExecuted && r.sourceStrategy,
+      );
+      const appliedStrategyName = activeRules.length > 0
+        ? activeRules[0].sourceStrategy!.name
+        : null;
+
       return {
         id: lot.id,
         symbol: lot.stock.symbol,
@@ -214,6 +244,9 @@ export class LotsService {
         remainingQuantity: remaining,
         memo: lot.memo,
         broker: { id: lot.broker.id, name: lot.broker.name },
+        themeId: lot.theme?.id ?? null,
+        themeName: lot.theme?.name ?? null,
+        appliedStrategyName,
         currentPrice,
         returnRate,
         evaluationAmount,

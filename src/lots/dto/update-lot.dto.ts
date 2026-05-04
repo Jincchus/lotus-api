@@ -1,4 +1,4 @@
-import { IsDateString, IsNumber, IsOptional, IsPositive, IsString, IsUUID } from 'class-validator';
+import { IsDateString, IsNumber, IsOptional, IsPositive, IsString, IsUUID, ValidateIf } from 'class-validator';
 import { Type } from 'class-transformer';
 import { IsNotFutureDate } from '../../common/validators/is-not-future-date.validator';
 
@@ -23,6 +23,11 @@ export class UpdateLotDto {
   @IsOptional()
   @IsUUID()
   brokerId?: string;
+
+  @IsOptional()
+  @ValidateIf((o) => o.themeId !== null)
+  @IsUUID()
+  themeId?: string | null;
 
   @IsOptional()
   @IsString()

@@ -12,6 +12,7 @@ import {
 import { User } from '../users/user.entity';
 import { Stock } from '../stocks/stock.entity';
 import { Broker } from '../brokers/broker.entity';
+import { Theme } from '../themes/theme.entity';
 import { PositionRule } from '../position-rules/position-rule.entity';
 import { SellHistory } from '../sell-histories/sell-history.entity';
 
@@ -29,6 +30,9 @@ export class Lot {
 
   @ManyToOne(() => Broker, (broker) => broker.lots, { eager: true })
   broker: Broker;
+
+  @ManyToOne(() => Theme, { nullable: true, eager: false, onDelete: 'SET NULL' })
+  theme: Theme | null;
 
   @Column({
     name: 'purchase_price',

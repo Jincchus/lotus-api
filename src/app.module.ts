@@ -19,6 +19,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { ErrorLogsModule } from './error-logs/error-logs.module';
 import { AdminModule } from './admin/admin.module';
 import { NoticesModule } from './notices/notices.module';
+import { ThemesModule } from './themes/themes.module';
 import configuration from './config/configuration';
 import { validationSchema } from './config/validation.schema';
 
@@ -50,6 +51,7 @@ import { validationSchema } from './config/validation.schema';
     ErrorLogsModule,
     AdminModule,
     NoticesModule,
+    ThemesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
