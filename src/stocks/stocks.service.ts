@@ -52,10 +52,8 @@ export class StocksService {
           if (market === Market.KR) {
             return q.symbol?.endsWith('.KS') || q.symbol?.endsWith('.KQ');
           }
-          return (
-            !q.symbol?.includes('.') &&
-            ['NMS', 'NYQ', 'NGM', 'ASE', 'PCX', 'BTS'].includes(q.exchange)
-          );
+          // 심볼에 '.'이 없으면 미국 상장 주식으로 간주 (거래소 코드는 Yahoo마다 다를 수 있음)
+          return !q.symbol?.includes('.');
         })
         .map((q: any) => ({
           symbol: q.symbol,
